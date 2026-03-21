@@ -1,0 +1,27 @@
+[0.034s] Invoking command in '/home/hhaul/ros2_ws/build/hamerschlag_haul': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(sparkfun_venv) /usr/bin/cmake /home/hhaul/ros2_ws/src/hamerschlag_haul -DCMAKE_INSTALL_PREFIX=/home/hhaul/ros2_ws/install/hamerschlag_haul
+[0.543s] -- The C compiler identification is GNU 13.3.0
+[0.965s] -- The CXX compiler identification is GNU 13.3.0
+[1.003s] -- Detecting C compiler ABI info
+[1.234s] -- Detecting C compiler ABI info - done
+[1.248s] -- Check for working C compiler: /usr/bin/cc - skipped
+[1.251s] -- Detecting C compile features
+[1.252s] -- Detecting C compile features - done
+[1.268s] -- Detecting CXX compiler ABI info
+[1.485s] -- Detecting CXX compiler ABI info - done
+[1.500s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.500s] -- Detecting CXX compile features
+[1.502s] -- Detecting CXX compile features - done
+[1.527s] -- Found ament_cmake: 2.5.5 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[1.743s] -- Found Python3: /home/hhaul/sparkfun_venv/bin/python3 (found version "3.12.3") found components: Interpreter 
+[2.003s] [0mCMake Error: File /home/hhaul/ros2_ws/src/hamerschlag_haul/package.xml does not exist.[0m
+[2.004s] [31mCMake Error at /opt/ros/jazzy/share/ament_cmake_core/cmake/core/stamp.cmake:24 (configure_file):
+[2.005s]   configure_file Problem configuring file
+[2.005s] Call Stack (most recent call first):
+[2.005s]   /opt/ros/jazzy/share/ament_cmake_core/cmake/core/ament_package_xml.cmake:73 (stamp)
+[2.006s]   /opt/ros/jazzy/share/ament_cmake_core/cmake/core/ament_package_xml.cmake:49 (_ament_package_xml)
+[2.006s]   /opt/ros/jazzy/share/ament_cmake_core/cmake/core/ament_package.cmake:63 (ament_package_xml)
+[2.006s]   CMakeLists.txt:17 (ament_package)
+[2.007s] 
+[2.007s] [0m
+[2.025s] -- Configuring incomplete, errors occurred!
+[2.035s] Invoked command in '/home/hhaul/ros2_ws/build/hamerschlag_haul' returned '1': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(sparkfun_venv) /usr/bin/cmake /home/hhaul/ros2_ws/src/hamerschlag_haul -DCMAKE_INSTALL_PREFIX=/home/hhaul/ros2_ws/install/hamerschlag_haul

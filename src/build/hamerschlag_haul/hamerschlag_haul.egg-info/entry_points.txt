@@ -1,0 +1,2 @@
+[console_scripts]
+odometry_publisher = hamerschlag_haul.odometry_publisher:main

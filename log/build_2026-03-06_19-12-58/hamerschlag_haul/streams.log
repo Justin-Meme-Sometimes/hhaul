@@ -1,0 +1,11 @@
+[1.782s] Invoking command in '/home/hhaul/ros2_ws/src/hamerschlag_haul': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/hhaul/ros2_ws/build/hamerschlag_haul/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/hhaul/ros2_ws/install/hamerschlag_haul/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/hamerschlag_haul build --build-base /home/hhaul/ros2_ws/build/hamerschlag_haul/build install --record /home/hhaul/ros2_ws/build/hamerschlag_haul/install.log --single-version-externally-managed install_data
+[2.258s] running egg_info
+[2.258s] creating ../../build/hamerschlag_haul/hamerschlag_haul.egg-info
+[2.290s] writing ../../build/hamerschlag_haul/hamerschlag_haul.egg-info/PKG-INFO
+[2.290s] writing dependency_links to ../../build/hamerschlag_haul/hamerschlag_haul.egg-info/dependency_links.txt
+[2.290s] writing entry points to ../../build/hamerschlag_haul/hamerschlag_haul.egg-info/entry_points.txt
+[2.291s] writing requirements to ../../build/hamerschlag_haul/hamerschlag_haul.egg-info/requires.txt
+[2.291s] writing top-level names to ../../build/hamerschlag_haul/hamerschlag_haul.egg-info/top_level.txt
+[2.291s] writing manifest file '../../build/hamerschlag_haul/hamerschlag_haul.egg-info/SOURCES.txt'
+[2.336s] error: package directory 'hamerschlag_haul' does not exist
+[2.389s] Invoked command in '/home/hhaul/ros2_ws/src/hamerschlag_haul' returned '1': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/hhaul/ros2_ws/build/hamerschlag_haul/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/hhaul/ros2_ws/install/hamerschlag_haul/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/hamerschlag_haul build --build-base /home/hhaul/ros2_ws/build/hamerschlag_haul/build install --record /home/hhaul/ros2_ws/build/hamerschlag_haul/install.log --single-version-externally-managed install_data

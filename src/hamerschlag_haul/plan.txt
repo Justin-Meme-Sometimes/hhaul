@@ -1,0 +1,4 @@
+for the the design we calibrate the servo in 1 direction
+
+then we set 4 directions as north, east, south, west than orientate to those directions if something falls in between those directions
+
