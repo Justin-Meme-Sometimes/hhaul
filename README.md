@@ -17,7 +17,7 @@ Autonomous delivery robot built on a Raspberry Pi 5 with ROS2 Jazzy, Google Cart
 | Microcontroller | Arduino UNO (USB serial bridge to Pi) |
 | Camera | USB camera with pan-tilt servo mount |
 
-**SSH access:** `ssh hhaul@172.26.19.241`  
+**SSH access:** `ssh hhaul@your_ip`  
 **Username:** `hhaul`
 
 ---
