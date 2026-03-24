@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import lgpio, time
 
+LEFT_CS   = 26
+RIGHT_CS  = 16
 LEFT_PWM  = 13
 RIGHT_PWM = 12
 LEFT_INA  = 17;  LEFT_INB  = 27
