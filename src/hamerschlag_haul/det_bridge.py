@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -22,13 +21,11 @@ class DetectionBridgeNode(Node):
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server.bind((self.host, self.port))
         server.listen(1)
-
         while True:
             self.get_logger().info("Waiting for Kria to connect...")
             conn, addr = server.accept()
             self.get_logger().info(f"Kria connected from {addr}")
             buf = ""
-
             try:
                 while True:
                     data = conn.recv(4096).decode('utf-8')
@@ -42,9 +39,20 @@ class DetectionBridgeNode(Node):
                             msg.data = line.strip()
                             self.pub.publish(msg)
                             parsed = json.loads(line.strip())
-                            num = len(parsed.get("detections", []))
+                            detections = parsed.get("detections", [])
+                            num = len(detections)
                             if num > 0:
                                 self.get_logger().info(f"Published {num} person detection(s)")
+                                for d in detections:
+                                    aspect_ratio = d.get("aspect_ratio", "N/A")
+                                    laying_down = d.get("laying_down", False)
+                                    confidence = d.get("confidence", 0)
+                                    status = "LAYING DOWN" if laying_down else "upright"
+                                    self.get_logger().info(
+                                        f"  -> confidence={confidence} "
+                                        f"aspect_ratio={aspect_ratio} "
+                                        f"posture={status}"
+                                    )
             except (ConnectionResetError, BrokenPipeError):
                 self.get_logger().warn("Kria disconnected.")
             finally:
