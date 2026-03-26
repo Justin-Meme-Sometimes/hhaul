@@ -5,6 +5,8 @@ from std_msgs.msg import String
 import socket
 import json
 import threading
+import subprocess
+import time
 
 class DetectionBridgeNode(Node):
     def __init__(self):
@@ -12,9 +14,18 @@ class DetectionBridgeNode(Node):
         self.pub = self.create_publisher(String, 'person_detections', 10)
         self.host = '0.0.0.0'
         self.port = 5555
+        self.last_alarm_time = 0
+        self.alarm_cooldown = 5.0  # seconds between alarms
         self.get_logger().info(f"Listening for Kria detections on port {self.port}...")
         self.listener_thread = threading.Thread(target=self.listen, daemon=True)
         self.listener_thread.start()
+
+    def trigger_alarm(self):
+        now = time.time()
+        if now - self.last_alarm_time > self.alarm_cooldown:
+            self.last_alarm_time = now
+            subprocess.Popen(['espeak', 'Warning, person detected on ground'])
+            self.get_logger().warn("ALARM TRIGGERED: Person laying down detected!")
 
     def listen(self):
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -53,6 +64,8 @@ class DetectionBridgeNode(Node):
                                         f"aspect_ratio={aspect_ratio} "
                                         f"posture={status}"
                                     )
+                                    if laying_down:
+                                        self.trigger_alarm()
             except (ConnectionResetError, BrokenPipeError):
                 self.get_logger().warn("Kria disconnected.")
             finally:
