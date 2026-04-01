@@ -23,6 +23,8 @@ setup(
     entry_points={
         'console_scripts': [
             'odometry_publisher = hamerschlag_haul.odometry_publisher:main',
+            'otos_odom = hamerschlag_haul.otos_odom:main',
+            'vnh5019_motor_run = hamerschlag_haul.vnh5019_motor_run:main',
         ],
     },
 )

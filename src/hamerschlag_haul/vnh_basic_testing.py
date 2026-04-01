@@ -8,7 +8,8 @@ RIGHT_PWM = 12
 LEFT_INA  = 17;  LEFT_INB  = 27
 RIGHT_INA = 22;  RIGHT_INB = 23
 PWM_FREQ  = 1000
-DUTY      = 35   # percent
+LEFT_DUTY  = 19  # percent -- max safe speed for Cartographer mapping (~0.2 m/s)
+RIGHT_DUTY = 21  # percent
 
 h = lgpio.gpiochip_open(4)
 
@@ -22,10 +23,10 @@ lgpio.gpio_claim_output(h, RIGHT_PWM, 0)
 lgpio.gpio_write(h, LEFT_INA,  1); lgpio.gpio_write(h, LEFT_INB,  0)
 lgpio.gpio_write(h, RIGHT_INA, 1); lgpio.gpio_write(h, RIGHT_INB, 0)
 
-lgpio.tx_pwm(h, LEFT_PWM,  PWM_FREQ, DUTY)
-lgpio.tx_pwm(h, RIGHT_PWM, PWM_FREQ, DUTY)
+lgpio.tx_pwm(h, LEFT_PWM,  PWM_FREQ, LEFT_DUTY)
+lgpio.tx_pwm(h, RIGHT_PWM, PWM_FREQ, RIGHT_DUTY)
 
-print(f"Running both motors forward at {DUTY}% duty / {PWM_FREQ}Hz -- Ctrl+C to stop")
+print(f"Running both motors forward at L:{LEFT_DUTY}% R:{RIGHT_DUTY}% duty / {PWM_FREQ}Hz -- Ctrl+C to stop")
 
 try:
     while True:

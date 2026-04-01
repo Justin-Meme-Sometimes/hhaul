@@ -4,13 +4,10 @@ from launch_ros.actions import Node
 from launch.actions import TimerAction, RegisterEventHandler
 from launch.event_handlers import OnProcessStart
 
-
 def generate_launch_description():
-
     cartographer_config_dir = os.path.expanduser(
         '~/ros2_ws/src/hamerschlag_haul/config'
     )
-
     urdf_file = os.path.expanduser(
         '~/ros2_ws/src/hamerschlag_haul/urdf/robot.urdf'
     )
@@ -21,9 +18,9 @@ def generate_launch_description():
         name='rplidar_node',
         parameters=[{
             'serial_port': '/dev/ttyUSB0',
-            'serial_baudrate': 115200,
             'frame_id': 'laser_frame',
             'angle_compensate': True,
+            'serial_baudrate': 115200
         }],
         output='screen'
     )
@@ -50,9 +47,6 @@ def generate_launch_description():
         arguments=['-resolution', '0.05']
     )
 
-    # Wait 5s after RPLidar starts before launching Cartographer.
-    # RPLidar timestamps are unstable for the first few scans after spin-up;
-    # starting Cartographer too early causes it to reject all scans.
     delayed_cartographer = RegisterEventHandler(
         OnProcessStart(
             target_action=rplidar_node,
@@ -66,8 +60,6 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-
-        # Robot state publisher -- broadcasts base_link -> laser_frame from URDF
         Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
@@ -80,8 +72,6 @@ def generate_launch_description():
                 'ignore_timestamp': True
             }]
         ),
-
         rplidar_node,
         delayed_cartographer,
-
     ])

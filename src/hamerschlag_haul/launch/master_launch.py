@@ -19,8 +19,6 @@ def generate_launch_description():
         '~/ros2_ws/src/hamerschlag_haul/config/nav2_params.yaml'
     )
 
-    map_file = os.path.expanduser('~/map.yaml')
-
     return LaunchDescription([
 
         # Robot state publisher
@@ -44,6 +42,7 @@ def generate_launch_description():
             name='rplidar_node',
             parameters=[{
                 'serial_port': '/dev/ttyUSB0',
+                'serial_baudrate': 115200,
                 'frame_id': 'laser_frame',
                 'angle_compensate': True,
             }],
@@ -60,22 +59,12 @@ def generate_launch_description():
             arguments=[
                 '-configuration_directory', cartographer_config_dir,
                 '-configuration_basename', 'rplidar_a1_localization.lua',
-                '-load_state_filename', os.path.expanduser('~/map.pbstream')
+                '-load_state_filename', os.path.expanduser('~/my_map.pbstream')
             ],
             remappings=[('scan', '/scan')]
         ),
 
-        # Cartographer occupancy grid
-        Node(
-            package='cartographer_ros',
-            executable='cartographer_occupancy_grid_node',
-            name='cartographer_occupancy_grid_node',
-            output='screen',
-            parameters=[{'use_sim_time': False}],
-            arguments=['-resolution', '0.05']
-        ),
-
-        # Map server
+        # Static map server (frozen map for Nav2 costmap)
         Node(
             package='nav2_map_server',
             executable='map_server',
@@ -83,7 +72,7 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 'use_sim_time': False,
-                'yaml_filename': map_file
+                'yaml_filename': os.path.expanduser('~/my_map.yaml')
             }]
         ),
 

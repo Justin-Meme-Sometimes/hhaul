@@ -12,48 +12,39 @@ import sys
 class OTOSOdomNode(Node):
     def __init__(self):
         super().__init__('otos_odom_node')
-
-        # Match Cartographer's BEST_EFFORT QoS
         qos = QoSProfile(
             depth=10,
-            reliability=ReliabilityPolicy.BEST_EFFORT,
+            reliability=ReliabilityPolicy.RELIABLE,
             durability=DurabilityPolicy.VOLATILE
         )
-
         self.odom_pub = self.create_publisher(Odometry, '/odom', qos)
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
 
-        # Initialize OTOS sensor
         self.otos = qwiic_otos.QwiicOTOS()
-
         if not self.otos.is_connected():
             self.get_logger().error("OTOS not connected! Check wiring.")
             sys.exit(1)
-
         self.otos.begin()
         self.get_logger().info("Calibrating OTOS IMU, keep sensor flat and still...")
         self.otos.calibrateImu()
         self.otos.resetTracking()
         self.get_logger().info("OTOS ready!")
 
-        # Publish at 50Hz
-        
+        self.timer = self.create_timer(0.02, self.publish_odom)  # 50Hz
 
     def publish_odom(self):
         pos = self.otos.getPosition()
+        vel = self.otos.getVelocity()
 
-        # Convert inches to meters, degrees to radians
         x = pos.x * 0.0254
         y = pos.y * 0.0254
         heading_rad = math.radians(pos.h)
 
-        # Quaternion from yaw only
         qz = math.sin(heading_rad / 2.0)
         qw = math.cos(heading_rad / 2.0)
 
         now = self.get_clock().now().to_msg()
 
-        # Publish TF odom -> base_link
         t = TransformStamped()
         t.header.stamp = now
         t.header.frame_id = 'odom'
@@ -67,7 +58,6 @@ class OTOSOdomNode(Node):
         t.transform.rotation.w = qw
         self.tf_broadcaster.sendTransform(t)
 
-        # Publish Odometry message
         odom = Odometry()
         odom.header.stamp = now
         odom.header.frame_id = 'odom'
@@ -79,15 +69,28 @@ class OTOSOdomNode(Node):
         odom.pose.pose.orientation.y = 0.0
         odom.pose.pose.orientation.z = qz
         odom.pose.pose.orientation.w = qw
+        odom.twist.twist.linear.x = vel.x * 0.0254
+        odom.twist.twist.linear.y = vel.y * 0.0254
+        odom.twist.twist.angular.z = math.radians(vel.h)
+
+        # Pose covariance (row-major 6x6): x, y, z, roll, pitch, yaw
+        # Higher values = less trust in odometry, more reliance on scan matching
+        odom.pose.covariance[0] = 0.5    # x
+        odom.pose.covariance[7] = 0.5    # y
+        odom.pose.covariance[35] = 2.0   # yaw -- high: OTOS heading drifts, let LIDAR handle rotation
+
+        # Twist covariance
+        odom.twist.covariance[0] = 0.3   # vx
+        odom.twist.covariance[7] = 0.3   # vy
+        odom.twist.covariance[35] = 1.0  # vyaw
+
         self.odom_pub.publish(odom)
 
 def main():
     rclpy.init()
     node = OTOSOdomNode()
-    while rclpy.ok():
-            node.publish_odom()
-            rclpy.spin_once(node, timeout_sec=0)
+    rclpy.spin(node)
     rclpy.shutdown()
 
 if __name__ == '__main__':
-    main()  
+    main()

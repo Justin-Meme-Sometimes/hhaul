@@ -13,7 +13,7 @@ def generate_launch_description():
         '~/ros2_ws/src/hamerschlag_haul/urdf/robot.urdf'
     )
 
-    map_file = os.path.expanduser('~/map.yaml')
+    map_file = os.path.expanduser('~/my_map.yaml')
 
     return LaunchDescription([
 

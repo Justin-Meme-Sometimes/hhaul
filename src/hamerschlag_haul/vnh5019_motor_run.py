@@ -1,103 +1,99 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-import pigpio
+import lgpio
 
-# VNH5019 pin mapping for Pi 5
-# Left motor
-LEFT_PWM = 12      # GPIO 12, hardware PWM
-LEFT_INA = 23      # Direction A
-LEFT_INB = 24      # Direction B
+LEFT_CS   = 26
+RIGHT_CS  = 16
+LEFT_PWM  = 13
+RIGHT_PWM = 12
+LEFT_INA  = 17;  LEFT_INB  = 27
+RIGHT_INA = 22;  RIGHT_INB = 23
 
-# Right motor
-RIGHT_PWM = 18     # GPIO 18, hardware PWM
-RIGHT_INA = 25     # Direction A
-RIGHT_INB = 16     # Direction B
-
-PWM_FREQ = 20000   # 20kHz
-
+PWM_FREQ = 1000
 
 class VNH5019MotorBridge(Node):
     def __init__(self):
         super().__init__('vnh5019_motor_bridge')
-
-        self.declare_parameter('wheel_base', 0.30)   # Adjust for your robot
-        self.declare_parameter('max_speed', 0.5)
-        self.declare_parameter('max_duty', 255)
+        self.declare_parameter('wheel_base', 0.30)
+        self.declare_parameter('max_linear', 0.5)
+        self.declare_parameter('max_angular', 3.5)
+        self.declare_parameter('min_duty', 18.0)   # percent -- below this motors don't move
+        self.declare_parameter('left_trim', 0.0)   # left is reference
+        self.declare_parameter('right_trim', 10.0) # right significantly slower, needs extra duty
 
         self.wheel_base = self.get_parameter('wheel_base').value
-        self.max_speed = self.get_parameter('max_speed').value
-        self.max_duty = self.get_parameter('max_duty').value
+        self.max_linear = self.get_parameter('max_linear').value
+        self.max_angular = self.get_parameter('max_angular').value
+        self.min_duty = self.get_parameter('min_duty').value
+        self.left_trim = self.get_parameter('left_trim').value
+        self.right_trim = self.get_parameter('right_trim').value
 
-        # Init pigpio
-        self.pi = pigpio.pi()
-        if not self.pi.connected:
-            self.get_logger().error('Failed to connect to pigpiod')
-            raise RuntimeError('pigpiod not running')
+        self.h = lgpio.gpiochip_open(4)
 
-        # Setup direction pins
         for pin in [LEFT_INA, LEFT_INB, RIGHT_INA, RIGHT_INB]:
-            self.pi.set_mode(pin, pigpio.OUTPUT)
-            self.pi.write(pin, 0)
+            lgpio.gpio_claim_output(self.h, pin, 0)
 
-        # Setup hardware PWM (duty 0-1000000)
-        self.pi.hardware_PWM(LEFT_PWM, PWM_FREQ, 0)
-        self.pi.hardware_PWM(RIGHT_PWM, PWM_FREQ, 0)
+        lgpio.gpio_claim_output(self.h, LEFT_PWM, 0)
+        lgpio.gpio_claim_output(self.h, RIGHT_PWM, 0)
+        lgpio.tx_pwm(self.h, LEFT_PWM, PWM_FREQ, 0)
+        lgpio.tx_pwm(self.h, RIGHT_PWM, PWM_FREQ, 0)
 
         self.get_logger().info('VNH5019 motors initialized')
-
         self.sub = self.create_subscription(
             Twist, 'cmd_vel', self.cmd_vel_cb, 10)
-
         self.last_cmd_time = self.get_clock().now()
         self.timer = self.create_timer(0.5, self.timeout_cb)
 
     def cmd_vel_cb(self, msg: Twist):
         self.last_cmd_time = self.get_clock().now()
-
         linear = msg.linear.x
         angular = msg.angular.z
 
-        # Differential drive kinematics
-        left = linear - (angular * self.wheel_base / 2.0)
-        right = linear + (angular * self.wheel_base / 2.0)
+        lin_norm = linear / self.max_linear
+        ang_norm = angular / self.max_angular
 
-        self._drive_motor(LEFT_PWM, LEFT_INA, LEFT_INB, left)
-        self._drive_motor(RIGHT_PWM, RIGHT_INA, RIGHT_INB, right)
+        left = lin_norm - ang_norm
+        right = lin_norm + ang_norm
 
+        left = max(-1.0, min(1.0, left))
+        right = max(-1.0, min(1.0, right))
+
+        self._drive_motor(LEFT_PWM, LEFT_INA, LEFT_INB, left, self.left_trim)
+        self._drive_motor(RIGHT_PWM, RIGHT_INA, RIGHT_INB, right, self.right_trim)
         self.get_logger().info(
             f'lin={linear:.3f} ang={angular:.3f} -> '
             f'L={left:.3f} R={right:.3f}')
 
-    def _drive_motor(self, pwm_pin, ina_pin, inb_pin, speed: float):
-        # Map speed to duty cycle (0-1000000 for pigpio hardware_PWM)
-        duty_frac = abs(speed) / self.max_speed
-        duty_frac = min(1.0, duty_frac)
-        duty = int(duty_frac * 1000000)
+    def _drive_motor(self, pwm_pin, ina_pin, inb_pin, speed: float, trim: float = 0.0):
+        duty_frac = abs(speed)
 
-        if speed > 0:
-            # Forward: INA=HIGH, INB=LOW
-            self.pi.write(ina_pin, 1)
-            self.pi.write(inb_pin, 0)
-        elif speed < 0:
-            # Reverse: INA=LOW, INB=HIGH
-            self.pi.write(ina_pin, 0)
-            self.pi.write(inb_pin, 1)
+        if duty_frac > 0.01:
+            # scale [0,1] into [min_duty, 100] then apply per-motor trim proportionally
+            base = self.min_duty + duty_frac * (100.0 - self.min_duty)
+            duty = base * (1.0 + trim / 100.0)
+            duty = max(0.0, min(100.0, duty))
         else:
-            # Brake: INA=LOW, INB=LOW
-            self.pi.write(ina_pin, 0)
-            self.pi.write(inb_pin, 0)
-            duty = 0
+            duty = 0.0
 
-        self.pi.hardware_PWM(pwm_pin, PWM_FREQ, duty)
+        if speed > 0.01:
+            lgpio.gpio_write(self.h, ina_pin, 1)
+            lgpio.gpio_write(self.h, inb_pin, 0)
+        elif speed < -0.01:
+            lgpio.gpio_write(self.h, ina_pin, 0)
+            lgpio.gpio_write(self.h, inb_pin, 1)
+        else:
+            lgpio.gpio_write(self.h, ina_pin, 0)
+            lgpio.gpio_write(self.h, inb_pin, 0)
+            duty = 0.0
+
+        lgpio.tx_pwm(self.h, pwm_pin, PWM_FREQ, duty)
 
     def _stop_motors(self):
-        self.pi.write(LEFT_INA, 0)
-        self.pi.write(LEFT_INB, 0)
-        self.pi.write(RIGHT_INA, 0)
-        self.pi.write(RIGHT_INB, 0)
-        self.pi.hardware_PWM(LEFT_PWM, PWM_FREQ, 0)
-        self.pi.hardware_PWM(RIGHT_PWM, PWM_FREQ, 0)
+        for pin in [LEFT_INA, LEFT_INB, RIGHT_INA, RIGHT_INB]:
+            lgpio.gpio_write(self.h, pin, 0)
+        lgpio.tx_pwm(self.h, LEFT_PWM, PWM_FREQ, 0)
+        lgpio.tx_pwm(self.h, RIGHT_PWM, PWM_FREQ, 0)
 
     def timeout_cb(self):
         elapsed = (self.get_clock().now() - self.last_cmd_time).nanoseconds / 1e9
@@ -106,9 +102,8 @@ class VNH5019MotorBridge(Node):
 
     def destroy_node(self):
         self._stop_motors()
-        self.pi.stop()
+        lgpio.gpiochip_close(self.h)
         super().destroy_node()
-
 
 def main(args=None):
     rclpy.init(args=args)
@@ -116,7 +111,6 @@ def main(args=None):
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()
