@@ -75,6 +75,7 @@ class OTOSOdomNode(Node):
 
         # Pose covariance (row-major 6x6): x, y, z, roll, pitch, yaw
         # Higher values = less trust in odometry, more reliance on scan matching
+        # Note that this gets changed alot and we depend more on Lidar for this
         odom.pose.covariance[0] = 0.5    # x
         odom.pose.covariance[7] = 0.5    # y
         odom.pose.covariance[35] = 2.0   # yaw -- high: OTOS heading drifts, let LIDAR handle rotation
