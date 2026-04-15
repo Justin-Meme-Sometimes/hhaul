@@ -12,7 +12,7 @@ def generate_launch_description():
         '~/ros2_ws/src/hamerschlag_haul/config/nav2_params.yaml'
     )
 
-    map_file = os.path.expanduser('~/map.yaml')
+    map_file = os.path.expanduser('~/map_new.yaml')
 
     return LaunchDescription([
 
