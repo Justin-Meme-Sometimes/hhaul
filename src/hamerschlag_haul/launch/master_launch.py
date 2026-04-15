@@ -59,7 +59,7 @@ def generate_launch_description():
             arguments=[
                 '-configuration_directory', cartographer_config_dir,
                 '-configuration_basename', 'rplidar_a1_localization.lua',
-                '-load_state_filename', os.path.expanduser('~/my_map.pbstream')
+                '-load_state_filename', os.path.expanduser('~/map_new.pbstream')  # map
             ],
             remappings=[('scan', '/scan')]
         ),
@@ -72,7 +72,7 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 'use_sim_time': False,
-                'yaml_filename': os.path.expanduser('~/my_map.yaml')
+                'yaml_filename': os.path.expanduser('~/map_new.yaml')
             }]
         ),
 
