@@ -25,6 +25,11 @@ class OTOSOdomNode(Node):
             self.get_logger().error("OTOS not connected! Check wiring.")
             sys.exit(1)
         self.otos.begin()
+        # Scalar calibration: drive exactly 1m and measure actual distance for linear,
+        # spin exactly 360 degrees and measure actual for angular.
+        # Formula: scalar = expected / measured  (e.g. if 360 cmd gives 350 actual: 360/350 = 1.029)
+        self.otos.setLinearScalar(1.0)   # tune: 1.0 = uncalibrated
+        self.otos.setAngularScalar(1.0)  # tune: 1.0 = uncalibrated
         self.get_logger().info("Calibrating OTOS IMU, keep sensor flat and still...")
         self.otos.calibrateImu()
         self.otos.resetTracking()
@@ -36,8 +41,8 @@ class OTOSOdomNode(Node):
         pos = self.otos.getPosition()
         vel = self.otos.getVelocity()
 
-        x = pos.x * 0.0254
-        y = pos.y * 0.0254
+        y = -pos.x * 0.0254
+        x = pos.y * 0.0254
         heading_rad = math.radians(pos.h)
 
         qz = math.sin(heading_rad / 2.0)
@@ -69,21 +74,20 @@ class OTOSOdomNode(Node):
         odom.pose.pose.orientation.y = 0.0
         odom.pose.pose.orientation.z = qz
         odom.pose.pose.orientation.w = qw
-        odom.twist.twist.linear.x = vel.x * 0.0254
-        odom.twist.twist.linear.y = vel.y * 0.0254
+        odom.twist.twist.linear.x = vel.y * 0.0254
+        odom.twist.twist.linear.y = vel.x * 0.0254
         odom.twist.twist.angular.z = math.radians(vel.h)
 
         # Pose covariance (row-major 6x6): x, y, z, roll, pitch, yaw
         # Higher values = less trust in odometry, more reliance on scan matching
-        # Note that this gets changed alot and we depend more on Lidar for this
-        odom.pose.covariance[0] = 0.5    # x
-        odom.pose.covariance[7] = 0.5    # y
-        odom.pose.covariance[35] = 2.0   # yaw -- high: OTOS heading drifts, let LIDAR handle rotation
+        odom.pose.covariance[0] = 0.05   # x
+        odom.pose.covariance[7] = 0.05   # y
+        odom.pose.covariance[35] = 99.0  # yaw -- discard OTOS heading, LiDAR handles rotation
 
         # Twist covariance
-        odom.twist.covariance[0] = 0.3   # vx
-        odom.twist.covariance[7] = 0.3   # vy
-        odom.twist.covariance[35] = 1.0  # vyaw
+        odom.twist.covariance[0] = 0.1   # vx
+        odom.twist.covariance[7] = 0.1   # vy
+        odom.twist.covariance[35] = 99.0 # vyaw -- discard angular velocity from OTOS
 
         self.odom_pub.publish(odom)
 
