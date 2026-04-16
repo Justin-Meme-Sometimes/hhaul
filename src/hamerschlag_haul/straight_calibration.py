@@ -8,7 +8,7 @@ RIGHT_INA = 22;  RIGHT_INB = 23
 PWM_FREQ  = 1000
 LEFT_DUTY  = 19
 RIGHT_DUTY = 19
-RUN_TIME   = 17  # seconds forward before reversing
+RUN_TIME   = 20# seconds forward before reversing
 
 h = lgpio.gpiochip_open(4)
 
