@@ -75,19 +75,19 @@ class OTOSOdomNode(Node):
         odom.pose.pose.orientation.z = qz
         odom.pose.pose.orientation.w = qw
         odom.twist.twist.linear.x = vel.y * 0.0254
-        odom.twist.twist.linear.y = vel.x * 0.0254
+        odom.twist.twist.linear.y = -vel.x * 0.0254
         odom.twist.twist.angular.z = math.radians(vel.h)
 
         # Pose covariance (row-major 6x6): x, y, z, roll, pitch, yaw
         # Higher values = less trust in odometry, more reliance on scan matching
         odom.pose.covariance[0] = 0.05   # x
         odom.pose.covariance[7] = 0.05   # y
-        odom.pose.covariance[35] = 99.0  # yaw -- discard OTOS heading, LiDAR handles rotation
+        odom.pose.covariance[35] = 0.5  # yaw -- discard OTOS heading, LiDAR handles rotation //was 99
 
         # Twist covariance
         odom.twist.covariance[0] = 0.1   # vx
         odom.twist.covariance[7] = 0.1   # vy
-        odom.twist.covariance[35] = 99.0 # vyaw -- discard angular velocity from OTOS
+        odom.twist.covariance[35] = 0.5 # vyaw -- discard angular velocity from OTOS //was 99
 
         self.odom_pub.publish(odom)
 
