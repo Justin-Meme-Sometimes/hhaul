@@ -26,7 +26,7 @@ Autonomous indoor delivery robot built on a Raspberry Pi 5 with ROS2 Jazzy, Goog
 
 PWM frequency: 1 kHz. Minimum duty cycle: 18% (below this the motors stall).
 
-**SSH:** `ssh hhaul@172.26.19.241`
+**SSH:** `ssh hhaul@yourip`
 **Browser remote:** https://connect.raspberrypi.com
 
 ---
