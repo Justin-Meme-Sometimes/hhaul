@@ -12,8 +12,9 @@ class MappingDriver(Node):
         # (linear, duration_seconds)
         self.sequence = []
         for _ in range(20):
-            self.sequence.append((1, 0.15))   # forward
-            self.sequence.append((0.0,  15))   # stop
+            self.sequence.append((1, 0.0))     # forward
+            self.sequence.append((0.0, 1.5))   # turn left
+            self.sequence.append((0.0, 0.0))   # stop
 
         self.step = 0
         self.step_start = self.get_clock().now()
