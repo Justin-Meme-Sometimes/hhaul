@@ -473,7 +473,7 @@ python3 gst_normal_camera_yolox_test.py
 
 | | |
 |---|---|
-| Pi SSH | `ssh hhaul@172.26.19.241` |
+| Pi SSH | `ssh hhaul@yourip` |
 | Pi browser remote | https://connect.raspberrypi.com |
 | ROS_DOMAIN_ID | `42` (Pi and Kria both) |
 | Detection socket | TCP port 5555, Kria → Pi |
