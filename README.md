@@ -407,15 +407,15 @@ python3 ~/ros2_ws/src/hamerschlag_haul/det_bridge.py
 
 ```bash
 # Dispatch to a waypoint
-curl -X POST http://172.26.19.241:5000/dispatch \
+curl -X POST http://yourip:5000/dispatch \
   -H "Content-Type: application/json" \
   -d '{"destination":"A"}'
 
 # Check status
-curl http://172.26.19.241:5000/status
+curl http://yourip:5000/status
 
 # Return home
-curl -X POST http://172.26.19.241:5000/return
+curl -X POST http://yourip:5000/return
 ```
 
 ### Common diagnostic checks
@@ -478,36 +478,8 @@ python3 gst_normal_camera_yolox_test.py
 | ROS_DOMAIN_ID | `42` (Pi and Kria both) |
 | Detection socket | TCP port 5555, Kria → Pi |
 | Dispatch API | TCP port 5000, Pi |
-| CMU network | WPA2-Enterprise (CMU Secure), configured via `nmcli` |
-
-**CMU network apt fix (IPv6 failures):**
-
-```bash
-echo 'Acquire::ForceIPv4 "true";' | sudo tee /etc/apt/apt.conf.d/99force-ipv4
-sudo apt update
-```
 
 ---
-
-## Git
-
-Remote: `git@github.com:Justin-Meme-Sometimes/hhaul.git`
-
-```bash
-# Set up SSH key on Pi
-ssh-keygen -t ed25519 -C "your@email.com"
-cat ~/.ssh/id_ed25519.pub   # add to GitHub → Settings → SSH keys
-
-git config --global user.name "YourGitHubUsername"
-git config --global user.email "your@email.com"
-
-# Verify remote uses SSH
-git remote -v
-git remote set-url origin git@github.com:Justin-Meme-Sometimes/hhaul.git
-```
-
----
-
 ## Troubleshooting
 
 **Map drifts or jumps**
