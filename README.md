@@ -1,7 +1,7 @@
 # Hamerschlag Haul
 
 Autonomous indoor delivery robot built on a Raspberry Pi 5 with ROS2 Jazzy, Google Cartographer SLAM, Nav2 navigation, FPGA-accelerated person detection, and a behavioral safety protocol system. Designed for autonomous delivery in hallway environments.
-
+![Alt text](hhaul_robot.jpg)
 ---
 
 ## Hardware
