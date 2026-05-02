@@ -28,14 +28,14 @@ class OTOSOdomNode(Node):
         # Scalar calibration: drive exactly 1m and measure actual distance for linear,
         # spin exactly 360 degrees and measure actual for angular.
         # Formula: scalar = expected / measured  (e.g. if 360 cmd gives 350 actual: 360/350 = 1.029)
-        self.otos.setLinearScalar(1.0)   # tune: 1.0 = uncalibrated
-        self.otos.setAngularScalar(1.0)  # tune: 1.0 = uncalibrated
+        self.otos.setLinearScalar(1.00)   # tune: 1.0 = uncalibrated
+        self.otos.setAngularScalar(1.00)  # tune: 1.0 = uncalibrated
         self.get_logger().info("Calibrating OTOS IMU, keep sensor flat and still...")
         self.otos.calibrateImu()
         self.otos.resetTracking()
         self.get_logger().info("OTOS ready!")
 
-        self.timer = self.create_timer(0.02, self.publish_odom)  # 50Hz
+        self.timer = self.create_timer(0.05, self.publish_odom)  # 20Hz — reduces I2C pressure on Pi
 
     def publish_odom(self):
         pos = self.otos.getPosition()
@@ -75,19 +75,19 @@ class OTOSOdomNode(Node):
         odom.pose.pose.orientation.z = qz
         odom.pose.pose.orientation.w = qw
         odom.twist.twist.linear.x = vel.y * 0.0254
-        odom.twist.twist.linear.y = -vel.x * 0.0254
+        odom.twist.twist.linear.y = vel.x * 0.0254
         odom.twist.twist.angular.z = math.radians(vel.h)
 
         # Pose covariance (row-major 6x6): x, y, z, roll, pitch, yaw
         # Higher values = less trust in odometry, more reliance on scan matching
         odom.pose.covariance[0] = 0.05   # x
         odom.pose.covariance[7] = 0.05   # y
-        odom.pose.covariance[35] = 0.5  # yaw -- discard OTOS heading, LiDAR handles rotation //was 99
+        odom.pose.covariance[35] = 99.0  # yaw -- discard OTOS heading, LiDAR handles rotation
 
         # Twist covariance
-        odom.twist.covariance[0] = 0.1   # vx
-        odom.twist.covariance[7] = 0.1   # vy
-        odom.twist.covariance[35] = 0.5 # vyaw -- discard angular velocity from OTOS //was 99
+        odom.twist.covariance[0] = 0.5   # vx
+        odom.twist.covariance[7] = 0.5   # vy
+        odom.twist.covariance[35] = 99.0 # vyaw -- discard angular velocity from OTOS
 
         self.odom_pub.publish(odom)
 
