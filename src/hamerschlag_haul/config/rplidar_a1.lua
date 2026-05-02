@@ -46,7 +46,7 @@ TRAJECTORY_BUILDER_2D.submaps.num_range_data = 25
 TRAJECTORY_BUILDER_2D.ceres_scan_matcher.translation_weight = 100
 TRAJECTORY_BUILDER_2D.ceres_scan_matcher.rotation_weight = 1000
 
-POSE_GRAPH.optimize_every_n_nodes = 5
+POSE_GRAPH.optimize_every_n_nodes = 30
 POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 2
 POSE_GRAPH.constraint_builder.min_score = 0.50
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.55
